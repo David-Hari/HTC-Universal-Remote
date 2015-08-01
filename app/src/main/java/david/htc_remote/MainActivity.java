@@ -2,22 +2,17 @@ package david.htc_remote;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.Gravity;
+import android.util.SparseArray;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import butterknife.ButterKnife;
-import butterknife.Bind;
-import butterknife.OnClick;
+import com.htc.htcircontrol.HtcIrData;
 
 
 public class MainActivity extends Activity {
-    @Bind(R.id.mainLayout) LinearLayout mainLayout;
-    PopupWindow popupWindow;
+    private static final int LEARN_TIMEOUT = 10; // seconds
     private IrManager ir;
+    private SparseArray<HtcIrData> commands = new SparseArray<HtcIrData>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,33 +20,22 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        //this.ir = new IrManager(getApplicationContext());
-        //this.ir.start();
-        this.popupWindow = new PopupWindow(this);
-
-		Button popupButton = new Button(this);
-		popupButton.setText("OK");
-		LinearLayout popupLayout = new LinearLayout(this);
-        popupLayout.setOrientation(LinearLayout.VERTICAL);
-        popupLayout.addView(popupButton);
-		popupWindow = new PopupWindow(popupLayout, LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-		popupWindow.setContentView(popupLayout);
+        this.ir = new IrManager(getApplicationContext());
+        this.ir.start();
     }
 
-    @OnClick(R.id.addButton)
-    public void addButton() {
-        Button button = new Button(this);
-        button.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        button.setText("Button");
+    public void onButtonClick(View view) {
+        Button button = (Button)view;
 
-        button.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                popupWindow.showAtLocation(mainLayout, Gravity.BOTTOM, 10, 10);
-                popupWindow.update(50, 50, 300, 80);
-            }
-        });
-
-        mainLayout.addView(button);
+        if (commands.indexOfKey(button.getId()) < 0) {
+            // Learn command and set it to this button
+            this.ir.learnCommand(LEARN_TIMEOUT);
+            //commands.put(button.getId(), new HtcIrData());
+            //button.setBackgroundColor(0xFFBADAF4);
+        }
+        else {
+            // Send button's command
+        }
     }
 
     /**
