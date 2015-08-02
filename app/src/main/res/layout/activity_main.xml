@@ -98,4 +98,8 @@
             android:onClick="onButtonClick" android:layout_gravity="center" android:background="#ff848484"
             android:layout_margin="5dp"/>
     </GridLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/statusLabel" android:layout_gravity="center_horizontal" android:layout_marginTop="50dp"/>
 </LinearLayout>

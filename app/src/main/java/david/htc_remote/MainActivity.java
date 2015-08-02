@@ -1,5 +1,7 @@
 package david.htc_remote;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import android.app.Activity;
@@ -12,6 +14,8 @@ import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
 
+import android.widget.TextView;
+import butterknife.Bind;
 import butterknife.ButterKnife;
 import com.htc.circontrol.CIRControl;
 import com.htc.htcircontrol.HtcIrData;
@@ -23,6 +27,9 @@ public class MainActivity extends Activity implements Handler.Callback {
     private CIRControl control;
     private Handler handler;
     private SparseArray<HtcIrData> commands = new SparseArray<>();
+    private Map<UUID, Button> waitingCommands = new HashMap<>();
+
+    @Bind(R.id.statusLabel) TextView statusLabel;
 
     /**
      * TODO:
@@ -45,17 +52,15 @@ public class MainActivity extends Activity implements Handler.Callback {
         Button button = (Button)view;
 
         if (commands.indexOfKey(button.getId()) < 0) {
-            // Learn command and set it to this button
-            this.learnCommand(LEARN_TIMEOUT);
-            //commands.put(button.getId(), new HtcIrData());
-            //button.setBackgroundColor(0xFFBADAF4);
+            this.learnCommand(button, LEARN_TIMEOUT);
         }
         else {
-            // Send button's command
+            this.transmit(commands.valueAt(button.getId()));
         }
     }
 
     public void transmit(final HtcIrData command) {
+        this.statusLabel.setText("Transmitting IR command");
         this.handler.post(new Runnable() {
             public void run() {
                 control.transmitIRCmd(command, true);
@@ -63,88 +68,56 @@ public class MainActivity extends Activity implements Handler.Callback {
         });
     }
 
-    public UUID learnCommand(int timeout) {
-        return this.control.learnIRCmd(timeout);
+    public void learnCommand(Button button, int timeout) {
+        this.statusLabel.setText("");
+        UUID queueId = this.control.learnIRCmd(timeout);
+        if (queueId != null) {
+            this.statusLabel.setText("Learning IR command");
+            this.waitingCommands.put(queueId, button);
+        }
+    }
+
+    public void storeNewCommand(Button button, HtcIrData command) {
+        this.commands.put(button.getId(), command);
+        button.setBackgroundColor(0xFFBADAF4);
     }
 
     @Override
     public boolean handleMessage(Message msg) {
         UUID resultId;
-        String status = null;
+        String status = "";
         switch (msg.what) {
             case CIRControl.MSG_RET_LEARN_IR:
                 resultId = (UUID)msg.getData().getSerializable(CIRControl.KEY_RESULT_ID);
                 Log.i(TAG, "Receive IR Returned UUID: " + resultId);
 
-                HtcIrData learntKey = (HtcIrData)msg.getData().getSerializable(CIRControl.KEY_CMD_RESULT);
+                HtcIrData learntCommand = (HtcIrData)msg.getData().getSerializable(CIRControl.KEY_CMD_RESULT);
 
-                if (learntKey == null) {
-                    switch (msg.arg1) {
-                        case CIRControl.ERR_LEARNING_TIMEOUT:
-                            status = "Learn IR Error: ERR_LEARNING_TIMEOUT";
-                            break;
-                        case CIRControl.ERR_PULSE_ERROR:
-                            //CIR receives IR data but data is unusable.
-                            //The common error is caused by user he/she does not align the phone's CIR receiver
-                            // with CIR transmitter of plastic remote.
-                            status = "Learn IR Error: ERR_PULSE_ERROR";
-                            break;
-                        case CIRControl.ERR_OUT_OF_FREQ:
-                            //This error is to warn user that the device is not supported or
-                            // the phone's CIR receiver does not align with CIR transmitter of the device.
-                            status = "Learn IR Error: ERR_OUT_OF_FREQ";
-                            break;
-                        case CIRControl.ERR_IO_ERROR:
-                            //CIR hardware component is busy in doing early CIR activity.
-                            status = "Learn IR Error: ERR_IO_ERROR";
-                            break;
-                        default:
-                            status = "";
-                            break;
+                if (learntCommand != null) {
+                    Button button = this.waitingCommands.get(resultId);
+                    if (button != null) {
+                        this.storeNewCommand(button, learntCommand);
                     }
+                    else {
+                        status = "Learn IR Error: No button found for " + resultId;
+                    }
+                }
+                else {
+                    status = "Learn IR Error: " + Errors.map.valueAt(msg.arg1);
                 }
                 break;
             case CIRControl.MSG_RET_TRANSMIT_IR:
                 resultId = (UUID)msg.getData().getSerializable(CIRControl.KEY_RESULT_ID);
                 Log.i(TAG, "Send IR Returned UUID: "+resultId);
-                switch (msg.arg1) {
-                    case CIRControl.ERR_IO_ERROR:
-                        //CIR hardware component is busy in doing early CIR command.
-                        status = "Send IR Error: ERR_IO_ERROR";
-                        break;
-                    case CIRControl.ERR_INVALID_VALUE:
-                        status = "Send IR Error: ERR_INVALID_VALUE";
-                        break;
-                    case CIRControl.ERR_CMD_DROPPED:
-                        //SDK might be too busy to send IR key, developer can try later, or send IR key with non-droppable setting
-                        status = "Send IR Error: ERR_CMD_DROPPED";
-                        break;
-                    default:
-                        status = "";
-                        break;
-                }
+                status = "Send IR Error: " + Errors.map.valueAt(msg.arg1);
                 break;
             case CIRControl.MSG_RET_CANCEL:
-                switch (msg.arg1) {
-                    case CIRControl.ERR_IO_ERROR:
-                        //CIR hardware component is busy in doing early CIR command.
-                        status = "Cancel Error: ERR_IO_ERROR";
-                        break;
-                    case CIRControl.ERR_CANCEL_FAIL:
-                        //CIR hardware component is busy in doing early CIR command.
-                        status = "Cancel Error: ERR_CANCEL_FAIL";
-                        break;
-                    default:
-                        status = "";
-                        break;
-                }
+                status = "Cancel Error: " + Errors.map.valueAt(msg.arg1);
                 break;
             default:
                 return false;
         }
-        if (status != null) {
-            Log.i(TAG, status);
-        }
+        this.statusLabel.setText(status);
         return true;
     }
 }
