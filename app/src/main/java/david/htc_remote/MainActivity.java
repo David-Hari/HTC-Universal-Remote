@@ -110,10 +110,14 @@ public class MainActivity extends Activity implements Handler.Callback {
             case CIRControl.MSG_RET_TRANSMIT_IR:
                 resultId = (UUID)msg.getData().getSerializable(CIRControl.KEY_RESULT_ID);
                 Log.i(TAG, "Send IR Returned UUID: "+resultId);
-                status = "Send IR Error: " + Errors.stringFor(msg.arg1);
+                if (msg.arg1 != CIRControl.ERR_NONE) {
+                    status = "Send IR Error: " + Errors.stringFor(msg.arg1);
+                }
                 break;
             case CIRControl.MSG_RET_CANCEL:
-                status = "Cancel Error: " + Errors.stringFor(msg.arg1);
+                if (msg.arg1 != CIRControl.ERR_NONE) {
+                    status = "Cancel Error: " + Errors.stringFor(msg.arg1);
+                }
                 break;
             default:
                 return false;
