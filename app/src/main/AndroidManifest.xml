@@ -9,7 +9,8 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name="david.htc_remote.MainActivity"
-            android:label="@string/appName" >
+            android:label="@string/appName"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

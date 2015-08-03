@@ -27,4 +27,8 @@ public class Errors {
         map.put(CIRControl.ERR_PIPE_ERROR, "ERR_PIPE_ERROR");
         map.put(CIRControl.ERR_OBJ_ERROR, "ERR_OBJ_ERROR");
     }
+
+    static String stringFor(int code) {
+        return map.get(code, "Unknown error");
+    }
 }

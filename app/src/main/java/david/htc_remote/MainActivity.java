@@ -50,12 +50,13 @@ public class MainActivity extends Activity implements Handler.Callback {
 
     public void onButtonClick(View view) {
         Button button = (Button)view;
+        HtcIrData commandData = commands.get(button.getId(), null);
 
-        if (commands.indexOfKey(button.getId()) < 0) {
+        if (commandData == null) {
             this.learnCommand(button, LEARN_TIMEOUT);
         }
         else {
-            this.transmit(commands.valueAt(button.getId()));
+            this.transmit(commandData);
         }
     }
 
@@ -103,16 +104,16 @@ public class MainActivity extends Activity implements Handler.Callback {
                     }
                 }
                 else {
-                    status = "Learn IR Error: " + Errors.map.valueAt(msg.arg1);
+                    status = "Learn IR Error: " + Errors.stringFor(msg.arg1);
                 }
                 break;
             case CIRControl.MSG_RET_TRANSMIT_IR:
                 resultId = (UUID)msg.getData().getSerializable(CIRControl.KEY_RESULT_ID);
                 Log.i(TAG, "Send IR Returned UUID: "+resultId);
-                status = "Send IR Error: " + Errors.map.valueAt(msg.arg1);
+                status = "Send IR Error: " + Errors.stringFor(msg.arg1);
                 break;
             case CIRControl.MSG_RET_CANCEL:
-                status = "Cancel Error: " + Errors.map.valueAt(msg.arg1);
+                status = "Cancel Error: " + Errors.stringFor(msg.arg1);
                 break;
             default:
                 return false;
