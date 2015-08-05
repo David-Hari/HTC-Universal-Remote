@@ -1,4 +1,4 @@
-package david.htc_remote;
+package david.htc_remote.ir;
 
 import android.util.SparseArray;
 import com.htc.circontrol.CIRControl;
@@ -28,7 +28,7 @@ public class Errors {
         map.put(CIRControl.ERR_OBJ_ERROR, "Obj error");
     }
 
-    static String stringFor(int code) {
+    public static String stringFor(int code) {
         return map.get(code, "Unknown error");
     }
 }

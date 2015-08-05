@@ -1,4 +1,4 @@
-package david.htc_remote;
+package david.htc_remote.activity;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,8 +12,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.util.SparseArray;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
@@ -23,6 +21,9 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.htc.circontrol.CIRControl;
 import com.htc.htcircontrol.HtcIrData;
+
+import david.htc_remote.ir.Errors;
+import david.htc_remote.R;
 
 
 public class MainActivity extends Activity implements Handler.Callback {

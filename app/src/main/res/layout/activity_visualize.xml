@@ -6,7 +6,7 @@
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingTop="@dimen/activity_vertical_margin"
                 android:paddingBottom="@dimen/activity_vertical_margin"
-                tools:context="david.htc_remote.VisualizeActivity" android:orientation="vertical">
+                tools:context="david.htc_remote.activity.VisualizeActivity" android:orientation="vertical">
 
     <LinearLayout
         android:orientation="vertical"

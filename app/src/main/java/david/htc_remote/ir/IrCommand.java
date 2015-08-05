@@ -1,4 +1,4 @@
-package david.htc_remote;
+package david.htc_remote.ir;
 
 import com.htc.htcircontrol.HtcIrData;
 
