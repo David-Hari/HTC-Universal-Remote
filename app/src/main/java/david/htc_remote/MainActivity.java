@@ -5,18 +5,22 @@ import java.util.Map;
 import java.util.UUID;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
 import android.widget.TextView;
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import com.htc.circontrol.CIRControl;
 import com.htc.htcircontrol.HtcIrData;
 
@@ -34,7 +38,6 @@ public class MainActivity extends Activity implements Handler.Callback {
     /**
      * TODO:
      *  - Store IR codes (perhaps in a database)
-     *  - Find better way of updating UI from manager/handler
      */
 
     @Override
@@ -46,6 +49,12 @@ public class MainActivity extends Activity implements Handler.Callback {
         this.handler = new Handler(Looper.getMainLooper(), this);
         this.control = new CIRControl(getApplicationContext(), this.handler);
         this.control.start();
+    }
+
+    @OnClick(R.id.showVisualizationButton)
+    public void showVisualization() {
+        Intent intent = new Intent(this, VisualizeActivity.class);
+        startActivity(intent);
     }
 
     public void onButtonClick(View view) {
