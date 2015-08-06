@@ -2,16 +2,26 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:paddingTop="@dimen/activity_vertical_margin"
-                android:paddingBottom="@dimen/activity_vertical_margin"
+                android:paddingLeft="@dimen/activityHorizontalMargin"
+                android:paddingRight="@dimen/activityHorizontalMargin"
+                android:paddingTop="@dimen/activityVerticalMargin"
+                android:paddingBottom="@dimen/activityVerticalMargin"
                 tools:context="david.htc_remote.activity.VisualizeActivity" android:orientation="vertical">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="0dp" android:id="@+id/linearLayout" android:layout_weight="1">
+        <view android:layout_width="wrap_content"
+              android:layout_height="@dimen/pulseVisualizationHeight"
+              class="david.htc_remote.view.PulseSignatureView" android:id="@+id/view"
+              android:layout_gravity="center_horizontal" android:layout_marginTop="2dp"
+              android:layout_marginBottom="2dp"/>
+        <view android:layout_width="wrap_content"
+              android:layout_height="@dimen/pulseVisualizationHeight"
+              class="david.htc_remote.view.PulseSignatureView" android:id="@+id/view2"
+              android:layout_gravity="center_horizontal" android:layout_marginTop="2dp"
+              android:layout_marginBottom="2dp"/>
     </LinearLayout>
     <Button
         android:layout_width="wrap_content"
