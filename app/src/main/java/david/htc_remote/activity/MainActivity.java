@@ -10,12 +10,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
-
 import android.widget.TextView;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -24,14 +23,13 @@ import com.htc.htcircontrol.HtcIrData;
 
 import david.htc_remote.ir.Errors;
 import david.htc_remote.R;
+import david.htc_remote.ir.IrCommand;
 
 
 public class MainActivity extends Activity implements Handler.Callback {
-    private static final String TAG = "IrManager";
-    private static final int LEARN_TIMEOUT = 10; // seconds
     private CIRControl control;
     private Handler handler;
-    private SparseArray<HtcIrData> commands = new SparseArray<>();
+    private SparseArray<IrCommand> commands = new SparseArray<>();
     private Map<UUID, Button> waitingCommands = new HashMap<>();
 
     @Bind(R.id.statusLabel) TextView statusLabel;
@@ -60,35 +58,35 @@ public class MainActivity extends Activity implements Handler.Callback {
 
     public void onButtonClick(View view) {
         Button button = (Button)view;
-        HtcIrData commandData = commands.get(button.getId(), null);
+        IrCommand command = commands.get(button.getId(), null);
 
-        if (commandData == null) {
-            this.learnCommand(button, LEARN_TIMEOUT);
+        if (command == null) {
+            this.learnCommand(button);
         }
         else {
-            this.transmit(commandData);
+            this.transmit(command.getData());
         }
     }
 
-    public void transmit(final HtcIrData command) {
+    public void transmit(final HtcIrData commandData) {
         this.statusLabel.setText("Transmitting IR command");
         this.handler.post(new Runnable() {
             public void run() {
-                control.transmitIRCmd(command, true);
+                control.transmitIRCmd(commandData, true);
             }
         });
     }
 
-    public void learnCommand(Button button, int timeout) {
+    public void learnCommand(Button button) {
         this.statusLabel.setText("");
-        UUID queueId = this.control.learnIRCmd(timeout);
+        UUID queueId = this.control.learnIRCmd(10);
         if (queueId != null) {
             this.statusLabel.setText("Learning IR command");
             this.waitingCommands.put(queueId, button);
         }
     }
 
-    public void storeNewCommand(Button button, HtcIrData command) {
+    public void storeNewCommand(Button button, IrCommand command) {
         this.commands.put(button.getId(), command);
         button.setBackgroundColor(0xFFBADAF4);
     }
@@ -100,14 +98,13 @@ public class MainActivity extends Activity implements Handler.Callback {
         switch (msg.what) {
             case CIRControl.MSG_RET_LEARN_IR:
                 resultId = (UUID)msg.getData().getSerializable(CIRControl.KEY_RESULT_ID);
-                Log.i(TAG, "Receive IR Returned UUID: " + resultId);
 
-                HtcIrData learntCommand = (HtcIrData)msg.getData().getSerializable(CIRControl.KEY_CMD_RESULT);
+                HtcIrData commandData = (HtcIrData)msg.getData().getSerializable(CIRControl.KEY_CMD_RESULT);
 
-                if (learntCommand != null) {
+                if (commandData != null) {
                     Button button = this.waitingCommands.get(resultId);
                     if (button != null) {
-                        this.storeNewCommand(button, learntCommand);
+                        this.storeNewCommand(button, new IrCommand(commandData));
                     }
                     else {
                         status = "Learn IR Error: No button found for " + resultId;
@@ -119,7 +116,6 @@ public class MainActivity extends Activity implements Handler.Callback {
                 break;
             case CIRControl.MSG_RET_TRANSMIT_IR:
                 resultId = (UUID)msg.getData().getSerializable(CIRControl.KEY_RESULT_ID);
-                Log.i(TAG, "Send IR Returned UUID: "+resultId);
                 if (msg.arg1 != CIRControl.ERR_NONE) {
                     status = "Send IR Error: " + Errors.stringFor(msg.arg1);
                 }
