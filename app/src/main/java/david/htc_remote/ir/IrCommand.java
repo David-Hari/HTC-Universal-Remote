@@ -3,18 +3,14 @@ package david.htc_remote.ir;
 import com.htc.htcircontrol.HtcIrData;
 
 
+/**
+ * Wrapper around the HtcIrData class to provide extra information.
+ */
 public class IrCommand {
-    private String name;
     private HtcIrData data;
     private int pulseLength;
 
     public IrCommand(HtcIrData data) {
-        this.data = data;
-        this.pulseLength = -1;
-    }
-
-    public IrCommand(String name, HtcIrData data) {
-        this.name = name;
         this.data = data;
         this.pulseLength = -1;
     }

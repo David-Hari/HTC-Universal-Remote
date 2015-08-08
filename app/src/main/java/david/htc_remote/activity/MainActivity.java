@@ -26,6 +26,9 @@ import david.htc_remote.R;
 import david.htc_remote.ir.IrCommand;
 
 
+/**
+ * Main "remote control" activity
+ */
 public class MainActivity extends Activity implements Handler.Callback {
     private CIRControl control;
     private Handler handler;
@@ -33,11 +36,6 @@ public class MainActivity extends Activity implements Handler.Callback {
     private Map<UUID, Button> waitingCommands = new HashMap<>();
 
     @Bind(R.id.statusLabel) TextView statusLabel;
-
-    /**
-     * TODO:
-     *  - Store IR codes (perhaps in a database)
-     */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,12 +48,21 @@ public class MainActivity extends Activity implements Handler.Callback {
         this.control.start();
     }
 
+    /**
+     * Starts the "visualize" activity.
+     */
     @OnClick(R.id.showVisualizationButton)
     public void showVisualization() {
         Intent intent = new Intent(this, VisualizeActivity.class);
         startActivity(intent);
     }
 
+    /**
+     * Click event handler for each of the remote control buttons.
+     * If the button has not yet learnt a command, it will start learning.
+     * Otherwise, it will transmit the command it has.
+     * @param view - The button view
+     */
     public void onButtonClick(View view) {
         Button button = (Button)view;
         IrCommand command = commands.get(button.getId(), null);
@@ -68,6 +75,10 @@ public class MainActivity extends Activity implements Handler.Callback {
         }
     }
 
+    /**
+     * Sends the given command to the IR controller so it can be transmitted.
+     * @param commandData
+     */
     public void transmit(final HtcIrData commandData) {
         this.statusLabel.setText("Transmitting IR command");
         this.handler.post(new Runnable() {
@@ -77,33 +88,49 @@ public class MainActivity extends Activity implements Handler.Callback {
         });
     }
 
+    /**
+     * Starts learning command for the given button.
+     * @param button
+     */
     public void learnCommand(Button button) {
         this.statusLabel.setText("");
         UUID queueId = this.control.learnIRCmd(10);
         if (queueId != null) {
             this.statusLabel.setText("Learning IR command");
+            button.setEnabled(false);
             this.waitingCommands.put(queueId, button);
         }
     }
 
+    /**
+     * Stores a command and associates it with a button.
+     * @param button
+     * @param command
+     */
     public void storeNewCommand(Button button, IrCommand command) {
         this.commands.put(button.getId(), command);
         button.setBackgroundColor(0xFFBADAF4);
     }
 
+    /**
+     * Handle messages from IR controller.
+     * @param message
+     * @return - True if the message was handled, false otherwise
+     */
     @Override
-    public boolean handleMessage(Message msg) {
+    public boolean handleMessage(Message message) {
         UUID resultId;
         String status = "";
-        switch (msg.what) {
+        switch (message.what) {
             case CIRControl.MSG_RET_LEARN_IR:
-                resultId = (UUID)msg.getData().getSerializable(CIRControl.KEY_RESULT_ID);
+                resultId = (UUID)message.getData().getSerializable(CIRControl.KEY_RESULT_ID);
 
-                HtcIrData commandData = (HtcIrData)msg.getData().getSerializable(CIRControl.KEY_CMD_RESULT);
+                HtcIrData commandData = (HtcIrData)message.getData().getSerializable(CIRControl.KEY_CMD_RESULT);
 
                 if (commandData != null) {
                     Button button = this.waitingCommands.get(resultId);
                     if (button != null) {
+                        button.setEnabled(true);
                         this.storeNewCommand(button, new IrCommand(commandData));
                     }
                     else {
@@ -111,18 +138,18 @@ public class MainActivity extends Activity implements Handler.Callback {
                     }
                 }
                 else {
-                    status = "Learn IR Error: " + Errors.stringFor(msg.arg1);
+                    status = "Learn IR Error: " + Errors.stringFor(message.arg1);
                 }
                 break;
             case CIRControl.MSG_RET_TRANSMIT_IR:
-                resultId = (UUID)msg.getData().getSerializable(CIRControl.KEY_RESULT_ID);
-                if (msg.arg1 != CIRControl.ERR_NONE) {
-                    status = "Send IR Error: " + Errors.stringFor(msg.arg1);
+                resultId = (UUID)message.getData().getSerializable(CIRControl.KEY_RESULT_ID);
+                if (message.arg1 != CIRControl.ERR_NONE) {
+                    status = "Send IR Error: " + Errors.stringFor(message.arg1);
                 }
                 break;
             case CIRControl.MSG_RET_CANCEL:
-                if (msg.arg1 != CIRControl.ERR_NONE) {
-                    status = "Cancel Error: " + Errors.stringFor(msg.arg1);
+                if (message.arg1 != CIRControl.ERR_NONE) {
+                    status = "Cancel Error: " + Errors.stringFor(message.arg1);
                 }
                 break;
             default:

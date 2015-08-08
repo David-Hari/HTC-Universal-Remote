@@ -10,6 +10,9 @@ import android.view.View;
 import david.htc_remote.ir.IrCommand;
 
 
+/**
+ * View that displays the on/off pulses of an IR command as vertical bars.
+ */
 public class PulseSignatureView extends View {
     private static final int BACKGROUND_COLOR = Color.BLACK;
     private static final int FOREGROUND_COLOR = Color.RED;
@@ -51,7 +54,7 @@ public class PulseSignatureView extends View {
             right = left + (frame[i] * widthScale);
             if (i % 2 == 0) {
                 // Only draw even pulses, the others are "off" and will just show the background colour
-                canvas.drawRect(left, 0.0f, right, (float)this.getHeight(), brush);
+                canvas.drawRect(left, 0.0f, right, (float)this.getHeight(), this.brush);
             }
             left = right;
         }
