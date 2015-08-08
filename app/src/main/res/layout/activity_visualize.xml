@@ -11,17 +11,8 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="0dp" android:id="@+id/linearLayout" android:layout_weight="1">
-        <view android:layout_width="wrap_content"
-              android:layout_height="@dimen/pulseVisualizationHeight"
-              class="david.htc_remote.view.PulseSignatureView" android:id="@+id/view"
-              android:layout_gravity="center_horizontal" android:layout_marginTop="2dp"
-              android:layout_marginBottom="2dp"/>
-        <view android:layout_width="wrap_content"
-              android:layout_height="@dimen/pulseVisualizationHeight"
-              class="david.htc_remote.view.PulseSignatureView" android:id="@+id/view2"
-              android:layout_gravity="center_horizontal" android:layout_marginTop="2dp"
-              android:layout_marginBottom="2dp"/>
+        android:layout_height="0dp" android:id="@+id/mainLayout" android:layout_weight="1"
+        >
     </LinearLayout>
     <Button
         android:layout_width="wrap_content"
